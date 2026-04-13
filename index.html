@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Website Prompt Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0E0C1A;
+    --bg2: #141128;
+    --bg3: #1C1833;
+    --surface: #1E1A30;
+    --surface2: #252040;
+    --border: rgba(180,160,255,0.12);
+    --border2: rgba(180,160,255,0.22);
+    --purple: #8B7FE8;
+    --purple-light: #A99BF0;
+    --purple-dim: rgba(139,127,232,0.15);
+    --purple-dim2: rgba(139,127,232,0.25);
+    --pink: #E87FBB;
+    --text: #EAE6FF;
+    --text2: #9E99C0;
+    --text3: #6B6690;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --radius-pill: 100px;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* subtle grid bg */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(139,127,232,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(139,127,232,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page { position: relative; z-index: 1; max-width: 680px; margin: 0 auto; padding: 60px 24px 120px; }
+
+  /* HEADER */
+  .header { text-align: center; margin-bottom: 64px; }
+  .header-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--purple-dim); border: 1px solid var(--border2);
+    border-radius: var(--radius-pill); padding: 5px 14px;
+    font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--purple-light); margin-bottom: 20px;
+  }
+  .header-badge span { width: 6px; height: 6px; border-radius: 50%; background: var(--purple); display: block; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+
+  .header h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(32px, 6vw, 48px);
+    font-weight: 400;
+    line-height: 1.15;
+    color: var(--text);
+    margin-bottom: 12px;
+  }
+  .header h1 em { font-style: italic; color: var(--purple-light); }
+  .header p { color: var(--text2); font-size: 15px; max-width: 420px; margin: 0 auto; }
+
+  /* STEP */
+  .step { margin-bottom: 40px; }
+  .step-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .step-num {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: linear-gradient(135deg, #6B5FCC, #A87FE8);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600; color: #fff; flex-shrink: 0;
+  }
+  .step-title { font-size: 15px; font-weight: 600; color: var(--text); }
+  .step-sub { font-size: 12px; color: var(--text3); margin-top: 1px; }
+
+  /* FIELDS GRID */
+  .fields-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 0; }
+  @media(max-width:520px) { .fields-grid { grid-template-columns: 1fr; } }
+  .field-group { display: flex; flex-direction: column; gap: 6px; }
+  .field-label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3); font-weight: 500; }
+
+  /* TEXTAREA */
+  textarea {
+    width: 100%; background: var(--surface);
+    border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 14px 16px; color: var(--text); font-family: 'DM Sans', sans-serif;
+    font-size: 14px; line-height: 1.6; resize: none;
+    transition: border-color 0.2s;
+    outline: none;
+  }
+  textarea::placeholder { color: var(--text3); }
+  textarea:focus { border-color: var(--border2); }
+
+  /* PILL GRID */
+  .pill-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+  .pill {
+    padding: 7px 14px; border-radius: var(--radius-pill);
+    border: 1px solid var(--border); background: var(--surface);
+    font-size: 13px; color: var(--text2); cursor: pointer;
+    transition: all 0.18s; user-select: none;
+  }
+  .pill:hover { border-color: var(--border2); color: var(--text); }
+  .pill.active {
+    background: var(--purple-dim2); border-color: var(--purple);
+    color: var(--purple-light); font-weight: 500;
+  }
+  .custom-input {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 10px 14px;
+    color: var(--text); font-family: 'DM Sans', sans-serif;
+    font-size: 13px; width: 100%; margin-top: 10px; outline: none;
+    transition: border-color 0.2s;
+  }
+  .custom-input::placeholder { color: var(--text3); }
+  .custom-input:focus { border-color: var(--border2); }
+
+  /* STYLE CARDS */
+  .style-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  @media(max-width:500px) { .style-grid { grid-template-columns: repeat(2,1fr); } }
+  .style-card {
+    border: 1px solid var(--border); border-radius: var(--radius);
+    background: var(--surface); cursor: pointer;
+    padding: 14px 12px 12px; transition: all 0.18s;
+    position: relative; overflow: hidden;
+  }
+  .style-card:hover { border-color: var(--border2); }
+  .style-card.active { border-color: var(--purple); background: var(--purple-dim); }
+  .style-card.active::after {
+    content: '✓'; position: absolute; top: 8px; right: 8px;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: var(--purple); color: #fff;
+    font-size: 10px; display: flex; align-items: center; justify-content: center;
+    font-weight: 700;
+  }
+  .style-preview { height: 60px; border-radius: 6px; margin-bottom: 10px; overflow: hidden; position: relative; }
+
+  /* mini previews */
+  .prev-clean { background: #fff; }
+  .prev-clean::before { content: ''; position: absolute; top: 8px; left: 8px; right: 8px; height: 6px; background: #1a1a1a; border-radius: 2px; }
+  .prev-clean::after { content: ''; position: absolute; top: 20px; left: 8px; width: 40px; height: 4px; background: #5B8DEF; border-radius: 10px; }
+
+  .prev-dark { background: #0D0D0D; }
+  .prev-dark::before { content: ''; position: absolute; top: 8px; left: 8px; right: 8px; height: 6px; background: #fff; border-radius: 2px; }
+  .prev-dark::after { content: ''; position: absolute; top: 20px; left: 8px; width: 40px; height: 4px; background: #7F77DD; border-radius: 10px; }
+
+  .prev-warm { background: #FAF6F0; }
+  .prev-warm::before { content: ''; position: absolute; top: 8px; left: 8px; right: 8px; height: 6px; background: #2C1810; border-radius: 2px; }
+  .prev-warm::after { content: ''; position: absolute; top: 20px; left: 8px; width: 40px; height: 4px; background: #C49A6C; border-radius: 10px; }
+
+  .prev-playful { background: linear-gradient(135deg,#FFF5F9,#F0F4FF); }
+  .prev-playful::before { content: ''; position: absolute; top: 8px; left: 8px; right: 8px; height: 6px; background: #6B3FA0; border-radius: 3px; }
+  .prev-playful::after { content: ''; position: absolute; top: 20px; left: 8px; width: 40px; height: 4px; background: #E87FBB; border-radius: 10px; }
+
+  .prev-luxury { background: #0A0804; }
+  .prev-luxury::before { content: ''; position: absolute; top: 8px; left: 8px; right: 8px; height: 6px; background: #C9A96E; border-radius: 2px; }
+  .prev-luxury::after { content: ''; position: absolute; top: 20px; left: 8px; width: 40px; height: 4px; background: #8B7355; border-radius: 10px; }
+
+  .prev-vibrant { background: linear-gradient(135deg,#1A0533,#0C1A40); }
+  .prev-vibrant::before { content: ''; position: absolute; top: 8px; left: 8px; right: 8px; height: 6px; background: #fff; border-radius: 2px; }
+  .prev-vibrant::after { content: ''; position: absolute; top: 20px; left: 8px; width: 40px; height: 4px; background: linear-gradient(90deg,#FF6EC7,#A78BFA); border-radius: 10px; }
+
+  .style-name { font-size: 12px; font-weight: 500; color: var(--text2); }
+  .style-card.active .style-name { color: var(--purple-light); }
+
+  /* SECTION BUILDER */
+  .sections-pool { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  .section-btn {
+    display: flex; align-items: center; gap: 6px;
+    padding: 7px 13px; border-radius: var(--radius-pill);
+    border: 1px solid var(--border); background: var(--surface);
+    font-size: 12px; color: var(--text2); cursor: pointer;
+    transition: all 0.18s;
+  }
+  .section-btn:hover { border-color: var(--border2); color: var(--text); }
+  .section-btn .ico { font-size: 14px; }
+
+  .sections-list { display: flex; flex-direction: column; gap: 6px; min-height: 40px; }
+  .section-item {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 10px 12px;
+    cursor: grab; transition: border-color 0.2s;
+    user-select: none;
+  }
+  .section-item:active { cursor: grabbing; }
+  .section-item.dragging { opacity: 0.5; border-color: var(--purple); }
+  .section-item.drag-over { border-color: var(--purple); border-style: dashed; }
+  .section-drag { color: var(--text3); font-size: 14px; flex-shrink: 0; }
+  .section-icon { font-size: 15px; flex-shrink: 0; }
+  .section-info { flex: 1; }
+  .section-info strong { font-size: 13px; font-weight: 500; color: var(--text); }
+  .section-info span { font-size: 11px; color: var(--text3); margin-left: 6px; }
+  .section-num {
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--bg3); border: 1px solid var(--border);
+    font-size: 10px; color: var(--text3); display: flex;
+    align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .section-remove {
+    background: none; border: none; color: var(--text3);
+    cursor: pointer; font-size: 16px; line-height: 1;
+    padding: 0 2px; transition: color 0.15s; flex-shrink: 0;
+  }
+  .section-remove:hover { color: #E87F8A; }
+
+  .sections-empty {
+    border: 1px dashed var(--border); border-radius: var(--radius-sm);
+    padding: 20px; text-align: center; color: var(--text3); font-size: 13px;
+  }
+
+  /* TEXT INPUT */
+  .text-input {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 12px 16px;
+    color: var(--text); font-family: 'DM Sans', sans-serif;
+    font-size: 14px; width: 100%; outline: none; transition: border-color 0.2s;
+  }
+  .text-input::placeholder { color: var(--text3); }
+  .text-input:focus { border-color: var(--border2); }
+
+  /* GENERATE BTN */
+  .generate-btn {
+    width: 100%; padding: 16px;
+    background: linear-gradient(135deg, #6B5FCC, #9B7FE8);
+    border: none; border-radius: var(--radius);
+    color: #fff; font-family: 'DM Sans', sans-serif;
+    font-size: 15px; font-weight: 600; cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .generate-btn:hover { opacity: 0.9; }
+  .generate-btn:active { transform: scale(0.99); }
+
+  /* OUTPUT */
+  .output-box { margin-top: 40px; display: none; }
+  .output-box.visible { display: block; }
+  .output-label {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .output-label span { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3); }
+  .copy-btn {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: var(--radius-sm); padding: 6px 14px;
+    color: var(--purple-light); font-size: 12px; font-weight: 500;
+    cursor: pointer; transition: all 0.18s; font-family: 'DM Sans', sans-serif;
+  }
+  .copy-btn:hover { background: var(--purple-dim); }
+  .output-text {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px;
+    font-size: 13px; line-height: 1.75; color: var(--text2);
+    white-space: pre-wrap; font-family: 'DM Sans', sans-serif;
+    max-height: 500px; overflow-y: auto;
+  }
+  .output-hint {
+    margin-top: 12px; text-align: center; font-size: 12px; color: var(--text3);
+  }
+  .output-hint strong { color: var(--text2); }
+
+  /* DIVIDER */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+
+  /* FOOTER */
+  .footer { text-align: center; color: var(--text3); font-size: 12px; margin-top: 60px; }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 10px; }
+
+  /* INSTRUCTIONS */
+  .instructions-box { margin-top: 28px; display: flex; flex-direction: column; gap: 28px; }
+  .instr-section {}
+  .instr-heading { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text3); margin-bottom: 14px; }
+  .instr-steps { display: flex; flex-direction: column; gap: 10px; }
+  .instr-step { display: flex; gap: 12px; align-items: flex-start; }
+  .instr-num {
+    width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0;
+    background: var(--surface2); border: 1px solid var(--border);
+    font-size: 11px; color: var(--purple-light);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 600; margin-top: 1px;
+  }
+  .instr-text { font-size: 13px; color: var(--text2); line-height: 1.65; }
+  .instr-text strong { color: var(--text); font-weight: 500; }
+
+  .builders-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 8px; margin-bottom: 14px; }
+  @media(max-width:480px) { .builders-grid { grid-template-columns: 1fr; } }
+  .builder-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 12px 14px;
+    text-decoration: none; transition: border-color 0.18s;
+    display: block;
+  }
+  .builder-card:hover { border-color: var(--border2); }
+  .builder-card-featured {
+    grid-column: 1 / -1;
+    border-color: var(--purple);
+    background: var(--purple-dim);
+  }
+  .builder-card-featured:hover { border-color: var(--purple-light); }
+  .builder-card-featured .builder-name { color: var(--purple-light); }
+  .builder-card-featured .builder-link { color: var(--purple-light); }
+  .builder-name { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 3px; }
+  .builder-desc { font-size: 11px; color: var(--text3); line-height: 1.5; margin-bottom: 6px; }
+  .builder-link { font-size: 11px; color: var(--purple-light); }
+  .instr-recommend {
+    font-size: 12px; color: var(--text3); line-height: 1.65;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 12px 14px;
+  }
+  .instr-recommend strong { color: var(--text2); }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <div class="header-badge"><span></span> Website Prompt Builder</div>
+    <h1>Build your <em>perfect</em> website</h1>
+    <p>Choose your style. Pick your sections. Get a ready-to-paste prompt for any AI builder.</p>
+  </div>
+
+  <!-- STEP 1 -->
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">1</div>
+      <div>
+        <div class="step-title">Tell us about your business</div>
+        <div class="step-sub">Four fields. No fluff. The builder does the rest.</div>
+      </div>
+    </div>
+    <div class="fields-grid">
+      <div class="field-group">
+        <label class="field-label">Business name</label>
+        <input class="text-input" id="bizName" placeholder="e.g. The Sovereign Circle" />
+      </div>
+      <div class="field-group">
+        <label class="field-label">Your audience</label>
+        <input class="text-input" id="bizAudience" placeholder="e.g. Creative entrepreneurs and coaches" />
+      </div>
+      <div class="field-group">
+        <label class="field-label">Your main offer</label>
+        <input class="text-input" id="bizOffer" placeholder="e.g. 12-month membership community" />
+      </div>
+      <div class="field-group">
+        <label class="field-label">Tone of voice</label>
+        <input class="text-input" id="bizTone" placeholder="e.g. Warm, bold, no-fluff" />
+      </div>
+    </div>
+    <div class="field-group" style="margin-top:10px;">
+      <label class="field-label">Anything else to add? <span style="color:var(--text3);font-weight:400;">(optional)</span></label>
+      <textarea id="websiteDesc" rows="2" placeholder="e.g. We focus on sovereignty and creative freedom. Not corporate, not hustle-culture."></textarea>
+    </div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">2</div>
+      <div>
+        <div class="step-title">What type of business?</div>
+        <div class="step-sub">Pick one or type your own below</div>
+      </div>
+    </div>
+    <div class="pill-grid" id="bizGrid"></div>
+    <input class="custom-input" id="customBiz" placeholder="Or type something else..." />
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">3</div>
+      <div>
+        <div class="step-title">Pick a style</div>
+        <div class="step-sub">This shapes the whole look and feel</div>
+      </div>
+    </div>
+    <div class="style-grid" id="styleGrid"></div>
+  </div>
+
+  <!-- STEP 4 -->
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">4</div>
+      <div>
+        <div class="step-title">Build your page</div>
+        <div class="step-sub">Add sections and drag to reorder them</div>
+      </div>
+    </div>
+
+    <div style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);margin-bottom:8px;">Your page — drag to reorder</div>
+    <div class="sections-list" id="sectionsList"></div>
+
+    <div style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);margin:16px 0 8px;">Add sections</div>
+    <div class="sections-pool" id="sectionsPool"></div>
+  </div>
+
+  <!-- STEP 5 -->
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">5</div>
+      <div>
+        <div class="step-title">What should the main button say?</div>
+        <div class="step-sub">This is your primary call to action</div>
+      </div>
+    </div>
+    <input class="text-input" id="ctaText" placeholder='e.g. "Join the Community" or "Book a Call"' />
+  </div>
+
+  <button class="generate-btn" onclick="generatePrompt()">
+    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+    Generate Prompt
+  </button>
+
+  <div class="output-box" id="outputBox">
+    <hr class="divider">
+    <div class="output-label">
+      <span>Your prompt</span>
+      <button class="copy-btn" onclick="copyPrompt()">
+        <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+        <span id="copyLabel">Copy Prompt</span>
+      </button>
+    </div>
+    <div class="output-text" id="outputText"></div>
+    <div class="output-hint">Paste into <strong>Lovable</strong>, <strong>Bolt</strong>, <strong>v0</strong>, or any AI builder</div>
+
+    <div class="instructions-box">
+
+      <div class="instr-section">
+        <div class="instr-heading">How to use this prompt</div>
+        <div class="instr-steps">
+          <div class="instr-step">
+            <div class="instr-num">1</div>
+            <div class="instr-text">Copy the prompt above using the Copy Prompt button.</div>
+          </div>
+          <div class="instr-step">
+            <div class="instr-num">2</div>
+            <div class="instr-text">Choose your builder below and paste the prompt into the chat or prompt field. Hit enter or send.</div>
+          </div>
+          <div class="instr-step">
+            <div class="instr-num">3</div>
+            <div class="instr-text">Wait about 60 seconds. Your first version will appear. From there you can request changes in plain English — no coding needed.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="instr-section">
+        <div class="instr-heading">Where to paste it</div>
+        <div class="builders-grid">
+          <a href="https://claude.ai" target="_blank" class="builder-card builder-card-featured">
+            <div class="builder-name">Claude.ai ✦</div>
+            <div class="builder-desc">The easiest starting point. Paste the prompt and ask for a single HTML file. Open it in your browser and host it on Netlify in minutes. No account needed beyond Claude.</div>
+            <div class="builder-link">claude.ai ↗</div>
+          </a>
+          <a href="https://lovable.dev" target="_blank" class="builder-card">
+            <div class="builder-name">Lovable</div>
+            <div class="builder-desc">Great for non-technical people. Gives you a live preview as it builds. Free to start.</div>
+            <div class="builder-link">lovable.dev ↗</div>
+          </a>
+          <a href="https://bolt.new" target="_blank" class="builder-card">
+            <div class="builder-name">Bolt</div>
+            <div class="builder-desc">Fast and powerful. Good for clean, modern sites.</div>
+            <div class="builder-link">bolt.new ↗</div>
+          </a>
+          <a href="https://v0.dev" target="_blank" class="builder-card">
+            <div class="builder-name">v0 by Vercel</div>
+            <div class="builder-desc">Excellent for polished UI. Great Tailwind output.</div>
+            <div class="builder-link">v0.dev ↗</div>
+          </a>
+          <a href="https://antigravity.google/download" target="_blank" class="builder-card">
+            <div class="builder-name">Antigravity</div>
+            <div class="builder-desc">Google's free AI builder. Supports Claude and Gemini. Download to use.</div>
+            <div class="builder-link">antigravity.google ↗</div>
+          </a>
+        </div>
+        <div class="instr-recommend">
+          My recommendation: start with <strong>Claude.ai</strong> — paste the prompt, ask for a single HTML file, and host it on Netlify. It is free, fast, and you stay in full control of your file. If you want a more visual, drag-and-drop experience after generating, try <strong>Lovable</strong>.
+        </div>
+      </div>
+
+      <div class="instr-section">
+        <div class="instr-heading">How to make changes after your first version</div>
+        <div class="instr-steps">
+          <div class="instr-step">
+            <div class="instr-num">✦</div>
+            <div class="instr-text"><strong>Tell it what to change in plain English.</strong> You do not need to know how to code. Just describe what you want differently. For example: "Make the hero headline bigger and change the button colour to dark green" or "Move the testimonials section above the pricing section."</div>
+          </div>
+          <div class="instr-step">
+            <div class="instr-num">✦</div>
+            <div class="instr-text"><strong>Be specific about one thing at a time.</strong> The AI works best when you give it one clear change per message rather than a long list. Change the copy first, then adjust the design, then fix the layout.</div>
+          </div>
+          <div class="instr-step">
+            <div class="instr-num">✦</div>
+            <div class="instr-text"><strong>To update your copy,</strong> paste in your real text and say: "Replace the placeholder text in the hero section with this:" followed by your actual headline and description.</div>
+          </div>
+          <div class="instr-step">
+            <div class="instr-num">✦</div>
+            <div class="instr-text"><strong>To add something new,</strong> describe it clearly. For example: "Add a two-column section below the hero with a photo on the left and a short paragraph about me on the right."</div>
+          </div>
+          <div class="instr-step">
+            <div class="instr-num">✦</div>
+            <div class="instr-text"><strong>If something looks wrong on mobile,</strong> say: "Fix the mobile layout — the hero text is overflowing on small screens." The AI will sort it.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="footer">Made with care and love by Dan inside BYOB OS</div>
+
+</div>
+
+<script>
+const bizTypes = [
+  { label: 'Coaching', emoji: '🎯' },
+  { label: 'AI / Automation', emoji: '🤖' },
+  { label: 'Web Design Agency', emoji: '🎨' },
+  { label: 'SaaS Product', emoji: '💻' },
+  { label: 'Real Estate', emoji: '🏡' },
+  { label: 'Personal Trainer', emoji: '💪' },
+  { label: 'Restaurant', emoji: '🍽️' },
+  { label: 'E-commerce', emoji: '🛒' },
+  { label: 'Photographer', emoji: '📷' },
+  { label: 'Law Firm', emoji: '⚖️' },
+  { label: 'Marketing Agency', emoji: '📣' },
+  { label: 'Dentist', emoji: '🦷' },
+  { label: 'Course Creator', emoji: '🎓' },
+  { label: 'Community / Membership', emoji: '🫂' },
+  { label: 'Podcast / Media Brand', emoji: '🎙️' },
+];
+
+const styles = [
+  { id: 'clean', name: 'Clean & Modern', cls: 'prev-clean', desc: 'Lots of whitespace, soft shadows, light backgrounds, rounded corners. Feels like a premium SaaS product. Professional but approachable. Think Linear or Notion.' },
+  { id: 'dark', name: 'Bold & Dark', cls: 'prev-dark', desc: 'Dark backgrounds, high contrast, dramatic typography. Confident and tech-forward. Think Vercel or Raycast.' },
+  { id: 'warm', name: 'Warm & Earthy', cls: 'prev-warm', desc: 'Cream and sand tones, organic textures, warm typography. Approachable and human. Think a premium lifestyle brand.' },
+  { id: 'playful', name: 'Playful & Soft', cls: 'prev-playful', desc: 'Pastel gradients, soft purples and pinks, rounded everything. Fun, friendly, and inviting. Think a creative studio or wellness brand.' },
+  { id: 'luxury', name: 'Luxury & Elegant', cls: 'prev-luxury', desc: 'Black and gold, refined typography, generous spacing. Exclusive and premium. Think a high-end consultancy or luxury service.' },
+  { id: 'vibrant', name: 'Vibrant & Gradient', cls: 'prev-vibrant', desc: 'Deep dark backgrounds with vivid gradient accents, glowing elements. Electric and modern. Think a cutting-edge tech or creative agency.' },
+];
+
+const allSections = [
+  { id: 'hero', icon: '✦', name: 'Hero', desc: 'Headline, CTA & image' },
+  { id: 'social-proof', icon: '👥', name: 'Social Proof', desc: 'Client logos & trust' },
+  { id: 'features', icon: '⊞', name: 'Features', desc: 'Benefits grid' },
+  { id: 'how-it-works', icon: '☰', name: 'How It Works', desc: 'Step-by-step process' },
+  { id: 'testimonials', icon: '💬', name: 'Testimonials', desc: 'Customer quotes' },
+  { id: 'pricing', icon: '$', name: 'Pricing', desc: 'Plans & pricing table' },
+  { id: 'faq', icon: '?', name: 'FAQ', desc: 'Common questions' },
+  { id: 'contact', icon: '✉', name: 'Contact Form', desc: 'Name, email, message' },
+  { id: 'newsletter', icon: '◈', name: 'Newsletter', desc: 'Email signup' },
+  { id: 'stats', icon: '▦', name: 'Stats', desc: 'Key numbers & metrics' },
+  { id: 'cta-banner', icon: '◀', name: 'CTA Banner', desc: 'Final call to action' },
+  { id: 'footer', icon: '▭', name: 'Footer', desc: 'Links & socials' },
+];
+
+const defaultSections = ['hero', 'social-proof', 'features', 'footer'];
+
+let selectedBiz = null;
+let selectedStyle = null;
+let activeSections = [...defaultSections];
+let dragSrc = null;
+
+// render biz pills
+const bizGrid = document.getElementById('bizGrid');
+bizTypes.forEach(b => {
+  const el = document.createElement('div');
+  el.className = 'pill';
+  el.textContent = b.emoji + ' ' + b.label;
+  el.dataset.val = b.label;
+  el.onclick = () => {
+    document.querySelectorAll('#bizGrid .pill').forEach(p => p.classList.remove('active'));
+    el.classList.toggle('active');
+    selectedBiz = el.classList.contains('active') ? b.label : null;
+    document.getElementById('customBiz').value = '';
+  };
+  bizGrid.appendChild(el);
+});
+
+document.getElementById('customBiz').addEventListener('input', e => {
+  if (e.target.value.trim()) {
+    document.querySelectorAll('#bizGrid .pill').forEach(p => p.classList.remove('active'));
+    selectedBiz = null;
+  }
+});
+
+// render style cards
+const styleGrid = document.getElementById('styleGrid');
+styles.forEach(s => {
+  const el = document.createElement('div');
+  el.className = 'style-card';
+  el.innerHTML = `<div class="style-preview ${s.cls}"></div><div class="style-name">${s.name}</div>`;
+  el.onclick = () => {
+    document.querySelectorAll('.style-card').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    selectedStyle = s;
+  };
+  styleGrid.appendChild(el);
+});
+
+// render sections
+function renderSections() {
+  const list = document.getElementById('sectionsList');
+  const pool = document.getElementById('sectionsPool');
+  list.innerHTML = '';
+  pool.innerHTML = '';
+
+  if (activeSections.length === 0) {
+    list.innerHTML = '<div class="sections-empty">No sections yet. Add some below.</div>';
+  }
+
+  activeSections.forEach((id, i) => {
+    const sec = allSections.find(s => s.id === id);
+    if (!sec) return;
+    const el = document.createElement('div');
+    el.className = 'section-item';
+    el.draggable = true;
+    el.dataset.id = id;
+    el.innerHTML = `
+      <span class="section-drag">⣿</span>
+      <span class="section-icon">${sec.icon}</span>
+      <div class="section-info"><strong>${sec.name}</strong><span>${sec.desc}</span></div>
+      <div class="section-num">${i + 1}</div>
+      <button class="section-remove" onclick="removeSection('${id}')">×</button>
+    `;
+    el.addEventListener('dragstart', e => { dragSrc = id; el.classList.add('dragging'); });
+    el.addEventListener('dragend', () => el.classList.remove('dragging'));
+    el.addEventListener('dragover', e => { e.preventDefault(); el.classList.add('drag-over'); });
+    el.addEventListener('dragleave', () => el.classList.remove('drag-over'));
+    el.addEventListener('drop', e => {
+      e.preventDefault(); el.classList.remove('drag-over');
+      if (dragSrc && dragSrc !== id) {
+        const from = activeSections.indexOf(dragSrc);
+        const to = activeSections.indexOf(id);
+        activeSections.splice(from, 1);
+        activeSections.splice(to, 0, dragSrc);
+        renderSections();
+      }
+    });
+    list.appendChild(el);
+  });
+
+  const available = allSections.filter(s => !activeSections.includes(s.id));
+  available.forEach(sec => {
+    const btn = document.createElement('button');
+    btn.className = 'section-btn';
+    btn.innerHTML = `<span class="ico">+</span>${sec.name}`;
+    btn.onclick = () => { activeSections.push(sec.id); renderSections(); };
+    pool.appendChild(btn);
+  });
+}
+
+function removeSection(id) {
+  activeSections = activeSections.filter(s => s !== id);
+  renderSections();
+}
+
+renderSections();
+
+// build section prompt text
+function buildSectionsPrompt() {
+  const descriptions = {
+    'hero': 'Hero — Big bold headline (8 words max), one-line description underneath, and a prominent call-to-action button. Add an image, mockup, or illustration on the right side.',
+    'social-proof': 'Social Proof — A row of 4-6 recognisable logos with a "Trusted by" label. Keep it compact and credible.',
+    'features': 'Features — A grid of 3-6 benefit cards. Each has an icon, short title, and one-sentence description. Focus on what the customer gets, not technical features.',
+    'how-it-works': 'How It Works — 3 simple numbered steps showing the customer journey. Each step has a title and short description. Connect them visually.',
+    'testimonials': 'Testimonials — 2-3 customer quotes with names, titles, and photos. Make them feel real and specific.',
+    'pricing': 'Pricing — 2-3 pricing tiers with a clear recommended option. List what is included in each. Make the CTA button prominent.',
+    'faq': 'FAQ — 5-7 common questions and answers in an accordion format. Address real objections.',
+    'contact': 'Contact Form — Name, email, and message fields with a submit button. Clean and simple.',
+    'newsletter': 'Newsletter — A simple email capture with a compelling one-line reason to subscribe.',
+    'stats': 'Stats — 3-4 key numbers that build credibility. Bold numbers with short labels beneath.',
+    'cta-banner': 'CTA Banner — A full-width band with a compelling headline and repeat of the main call-to-action button.',
+    'footer': 'Footer — Logo, navigation links in columns, social media icons, and copyright text. Clean and organised.',
+  };
+  return activeSections.map((id, i) => `${i + 1}. ${descriptions[id] || id}`).join('\n');
+}
+
+function generatePrompt() {
+  const bizName = document.getElementById('bizName').value.trim();
+  const audience = document.getElementById('bizAudience').value.trim();
+  const offer = document.getElementById('bizOffer').value.trim();
+  const tone = document.getElementById('bizTone').value.trim();
+  const extraDesc = document.getElementById('websiteDesc').value.trim();
+  const customBiz = document.getElementById('customBiz').value.trim();
+  const biz = customBiz || selectedBiz || '[your business type]';
+  const style = selectedStyle;
+  const cta = document.getElementById('ctaText').value.trim() || 'Get Started';
+
+  if (!bizName) { alert('Please enter a business name in Step 1.'); return; }
+  if (!audience) { alert('Please describe your audience in Step 1.'); return; }
+  if (!offer) { alert('Please describe your main offer in Step 1.'); return; }
+  if (activeSections.length === 0) { alert('Please add at least one section in Step 4.'); return; }
+
+  const styleDesc = style
+    ? `Design style: ${style.desc}`
+    : 'Design style: Clean and modern. Lots of whitespace, soft shadows, light backgrounds, rounded corners. Feels like a premium SaaS product. Professional but approachable.';
+
+  const prompt = `Build me a beautiful, complete, single-page website.
+
+**Business name:** ${bizName}
+**Type of business:** ${biz}
+**Target audience:** ${audience}
+**Main offer:** ${offer}
+**Tone of voice:** ${tone || 'Professional but approachable'}
+**Main button text:** "${cta}"${extraDesc ? `\n**Additional context:** ${extraDesc}` : ''}
+
+${styleDesc}
+
+Pick a colour palette that feels right for this type of business. Do not overthink it — just choose colours that look great together and fit the vibe.
+
+**Page sections (build them in this order):**
+${buildSectionsPrompt()}
+
+**Important:**
+- Make it fully responsive (looks great on phone and desktop)
+- Use real, realistic placeholder text — not lorem ipsum. Write copy that actually fits this business, audience, and tone of voice.
+- Add smooth, subtle animations (fade in on scroll, hover effects on buttons and cards)
+- The call-to-action button should appear above the fold and repeat near the bottom
+- Keep the code clean and production-ready. Single page, no routing.
+- Use React with Tailwind CSS`;
+
+  document.getElementById('outputText').textContent = prompt;
+  const box = document.getElementById('outputBox');
+  box.classList.add('visible');
+  setTimeout(() => box.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+}
+
+function copyPrompt() {
+  const text = document.getElementById('outputText').textContent;
+  const label = document.getElementById('copyLabel');
+
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(() => {
+      label.textContent = 'Copied!';
+      setTimeout(() => label.textContent = 'Copy Prompt', 2000);
+    });
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    try {
+      document.execCommand('copy');
+      label.textContent = 'Copied!';
+      setTimeout(() => label.textContent = 'Copy Prompt', 2000);
+    } catch(e) {
+      label.textContent = 'Select & copy manually';
+      setTimeout(() => label.textContent = 'Copy Prompt', 3000);
+    }
+    document.body.removeChild(ta);
+  }
+}
+</script>
+</body>
+</html>
